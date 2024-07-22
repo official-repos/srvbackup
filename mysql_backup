@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Some variables - adjust them as needed
+# BACKUP_DIR=/backup/`date "+%a"`/mysql
+BACKUP_DIR=/backup/mysql
+MYSQL_USER=root
+
+# Do backups
+logger "mysql_backup :: start ------------------"
+
+# Check whether the directory already exists. If not, create it
+if [ ! -d "$BACKUP_DIR" ]; then
+        sudo mkdir -p $BACKUP_DIR
+fi
+sudo chmod o+w ${BACKUP_DIR}
+cd $BACKUP_DIR
+
+# Get all databases
+databases=`sudo mysql --defaults-file=/root/.my.cnf -u $MYSQL_USER -e "SHOW DATABASES;" | grep -Ev "(Database|information_schema|performance_schema|test)"`
+
+# CHECK="sudo mysql -u $MYSQL_USER -e 'SHOW DATABASES;' | grep -Ev '(Database|information_schema|performance_schema|test)'"
+# logger "Db => ${CHECK}"
+
+# Perform Backup for each database
+for db in $databases; do
+
+        logger "Db => ${db}"
+
+        # echo ${db}
+        # # Backup DB
+        FILENAME=$BACKUP_DIR/$db.sql.gz
+        # logger ${FILENAME}
+        # CHECK2="sudo mysqldump --defaults-file=/root/.my.cnf -u $MYSQL_USER -alv -h localhost $db | gzip > $FILENAME"
+        # logger "${CHECK2}"
+
+        sudo mysqldump --defaults-file=/root/.my.cnf -u $MYSQL_USER -alv -h localhost $db | gzip > $FILENAME
+
+        # Adjust permissions
+        # chmod og= $FILENAME
+
+done
+
+logger "mysql_backup :: end ------------------"
+

@@ -1,0 +1,17 @@
+---
+- name: Backup mysql
+  hosts: webservers
+  tasks:
+    - name: Copy 'mysql_backup' from local to remote location (/tmp)
+      copy:
+        src: /home/ubuntu/srvbackup/mysql_backup
+        dest: /tmp
+        mode: "0755"
+    - name: Execute script '/tmp/mysql_backup'
+      command: bash /tmp/mysql_backup
+    - name: rsync /backup/mysql
+      shell: 'sudo rsync --recursive -l -chavzP /backup/mysql rsuser12@10.24.101.20::backup/`date "+%a"`/{{ansible_ssh_host}}/'
+    - name: rsync /var/www
+      shell: 'sudo rsync --recursive -l -chavzP /var/www rsuser12@10.24.101.20::backup/`date "+%a"`/{{ansible_ssh_host}}/'
+    - name: rsync /etc
+      shell: 'sudo rsync --recursive -l -chavzP /etc rsuser12@10.24.101.20::backup/`date "+%a"`/{{ansible_ssh_host}}/'
